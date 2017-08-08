@@ -1,0 +1,17 @@
+{
+  "name": "electron-dragdrop-win",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "nan": "^2.6.2"
+  },
+  "dependencies": {
+    "bindings": "^1.3.0"
+  }
+}
