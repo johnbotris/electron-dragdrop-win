@@ -6,10 +6,12 @@
       ],
       "target_name": "electron-dragdrop-win",
       "sources": [ 
+        "stdafx.cpp",
         "addon.cc",
-        "dataobject.cc",
-        "dropsource.cc",
-        "enumformat.cc"
+        "dataobject.cpp",
+        "dropsource.cpp",
+        "dropsourcenotify.cpp",
+        "enumformat.cpp"
       ]
     }
   ]

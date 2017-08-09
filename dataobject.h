@@ -1,57 +1,35 @@
-//
-//	DATAOBJECT.CPP
-//
-//	Implementation of the IDataObject COM interface
-//
-//	By J Brown 2004 
-//
-//	www.catch22.net
-//
-
-#include <windows.h>
-
+#pragma once
 class OleDataObject : public IDataObject
 {
-public:
-	//
-    // IUnknown members
-	//
-    HRESULT __stdcall QueryInterface (REFIID iid, void ** ppvObject);
-    ULONG   __stdcall AddRef (void);
-    ULONG   __stdcall Release (void);
-		
-    //
-	// IDataObject members
-	//
-    HRESULT __stdcall GetData				(FORMATETC *pFormatEtc,  STGMEDIUM *pMedium);
-    HRESULT __stdcall GetDataHere			(FORMATETC *pFormatEtc,  STGMEDIUM *pMedium);
-    HRESULT __stdcall QueryGetData			(FORMATETC *pFormatEtc);
-	HRESULT __stdcall GetCanonicalFormatEtc (FORMATETC *pFormatEct,  FORMATETC *pFormatEtcOut);
-    HRESULT __stdcall SetData				(FORMATETC *pFormatEtc,  STGMEDIUM *pMedium,  BOOL fRelease);
-	HRESULT __stdcall EnumFormatEtc			(DWORD      dwDirection, IEnumFORMATETC **ppEnumFormatEtc);
-	HRESULT __stdcall DAdvise				(FORMATETC *pFormatEtc,  DWORD advf, IAdviseSink *pAdvSink, DWORD *pdwConnection);
-	HRESULT __stdcall DUnadvise				(DWORD      dwConnection);
-	HRESULT __stdcall EnumDAdvise			(IEnumSTATDATA **ppEnumAdvise);
-	
-	//
-    // Constructor / Destructor
-	//
-    OleDataObject(FORMATETC *fmt, STGMEDIUM *stgmed, int count);
-    ~OleDataObject();
-	
 private:
+	LONG	   m_lRefCount = 0;
+	FORMATETC *m_pFormatEtc = nullptr;
+	STGMEDIUM *m_pStgMedium = nullptr;
+	LONG	   m_nNumFormats = 0;
 
 	int LookupFormatEtc(FORMATETC *pFormatEtc);
+	HGLOBAL DupMem(HGLOBAL hMem);
 
-    //
-	// any private members and functions
-	//
-    LONG	   m_lRefCount;
+public:
+	OleDataObject(FORMATETC *fmtetc, STGMEDIUM *stgmed, int count);
+	~OleDataObject();
 
-	FORMATETC *m_pFormatEtc;
-	STGMEDIUM *m_pStgMedium;
-	LONG	   m_nNumFormats;
+	// IUnknown methods
+	STDMETHOD(QueryInterface)(REFIID iid, LPVOID* ppvObject);
+	STDMETHOD_(ULONG, AddRef)();
+	STDMETHOD_(ULONG, Release)();
 
+	// IDataObject methods
+	STDMETHOD(GetData)(LPFORMATETC pFormatEtc, LPSTGMEDIUM pMedium);
+	STDMETHOD(GetDataHere)(LPFORMATETC pFormatEtc, LPSTGMEDIUM pMedium);
+	STDMETHOD(QueryGetData)(LPFORMATETC pFormatEtc);
+	STDMETHOD(GetCanonicalFormatEtc)(LPFORMATETC pFormatEct, LPFORMATETC pFormatEtcOut);
+	STDMETHOD(SetData)(LPFORMATETC pFormatEtc, LPSTGMEDIUM pMedium, BOOL fRelease);
+	STDMETHOD(EnumFormatEtc)(DWORD dwDirection, LPENUMFORMATETC* ppEnumFormatEtc);
+	STDMETHOD(DAdvise)(LPFORMATETC pFormatEtc, DWORD advf, LPADVISESINK pAdvSink, LPDWORD pdwConnection);
+	STDMETHOD(DUnadvise)(DWORD dwConnection);
+	STDMETHOD(EnumDAdvise)(LPENUMSTATDATA* ppEnumAdvise);
+
+	static HRESULT Create(LPFORMATETC pFmtetc, LPSTGMEDIUM pStgmeds, UINT count, LPDATAOBJECT* ppDataObject);
 };
 
-HRESULT CreateDataObject (FORMATETC *fmtetc, STGMEDIUM *stgmeds, UINT count, IDataObject **ppDataObject);

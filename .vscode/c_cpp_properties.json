@@ -4,9 +4,10 @@
             "name": "Windows",
             "includePath": [
                 "c:/program files (x86)/windows kits/10/include/10.0.15063.0/shared/",
-                "c:/program files (x86)/microsoft visual studio/2017/enterprise/vc/tools/msvc/14.10.25017/include/",
+                "c:/program files (x86)/microsoft visual studio 14.0/vc/include/",
                 "c:/program files (x86)/windows kits/10/include/10.0.15063.0/um/",
                 "c:/program files (x86)/windows kits/10/include/10.0.15063.0/ucrt/",
+                "c:/program files (x86)/microsoft visual studio 14.0/vc/atlmfc/include/",
                 "c:/users/ashkan/.node-gyp/8.2.1/include/node/",
                 "${workspaceRoot}/node_modules/nan/",
                 "${workspaceRoot}"
@@ -15,11 +16,12 @@
             "browse": {
                 "path": [
                     "c:/program files (x86)/windows kits/10/include/10.0.15063.0/shared/",
-                    "c:/program files (x86)/microsoft visual studio/2017/enterprise/vc/tools/msvc/14.10.25017/include/",
+                    "c:/program files (x86)/microsoft visual studio 14.0/vc/include/",
                     "c:/program files (x86)/windows kits/10/include/10.0.15063.0/um/",
                     "c:/program files (x86)/windows kits/10/include/10.0.15063.0/ucrt/",
+                    "c:/program files (x86)/microsoft visual studio 14.0/vc/atlmfc/include/",
                     "c:/users/ashkan/.node-gyp/8.2.1/include/node/",
-                    "./node_modules/nan/",
+                    "${workspaceRoot}/node_modules/nan/",
                     "${workspaceRoot}"
                 ]
             }

@@ -1,49 +1,23 @@
-//
-//	DROPSOURCE.CPP
-//
-//	Implementation of the IDropSource COM interface
-//
-//	By J Brown 2004 
-//
-//	www.catch22.net
-//
-
-#include <windows.h>
-
-class OleDropSource : public IDropSource, public IDropSourceNotify
+#pragma once
+class OleDropSource: public IDropSource
 {
-public:
-	//
-    // IUnknown members
-	//
-    HRESULT __stdcall QueryInterface	(REFIID iid, void ** ppvObject);
-    ULONG   __stdcall AddRef			(void);
-    ULONG   __stdcall Release			(void);
-		
-    //
-	// IDropSource members
-	//
-    HRESULT __stdcall QueryContinueDrag	(BOOL fEscapePressed, DWORD grfKeyState);
-	HRESULT __stdcall GiveFeedback		(DWORD dwEffect);
-	
-	//
-	// IDropSourceNotify members
-	//
-	HRESULT __stdcall DragEnterTarget(HWND hwndTarget);
-	HRESULT __stdcall DragLeaveTarget();
-
-	//
-    // Constructor / Destructor
-	//
-    OleDropSource();
-    ~OleDropSource();
-	
 private:
+	ULONG m_lRefCount = 0;
+	IDropSourceNotify* m_pDropSourceNotify = nullptr;
 
-    //
-	// private members and functions
-	//
-    LONG	   m_lRefCount;
+public:
+	OleDropSource(IDropSourceNotify* pDropSourceNotify);
+	~OleDropSource();
+
+	static HRESULT Create(IDropSourceNotify* pDropSourceNotify, IDropSource **ppDropSource);
+
+	// IUnknown methods
+	STDMETHOD(QueryInterface)(REFIID iid, LPVOID* ppvObject);
+	STDMETHOD_(ULONG, AddRef)();
+	STDMETHOD_(ULONG, Release)();
+
+	// IDropSource methods
+	STDMETHOD(QueryContinueDrag)(BOOL fEscapePressed, DWORD grfKeyState);
+	STDMETHOD(GiveFeedback)(DWORD dwEffect);
 };
 
-HRESULT CreateDropSource(IDropSource **ppDropSource);
