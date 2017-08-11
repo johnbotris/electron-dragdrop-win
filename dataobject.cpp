@@ -1,8 +1,7 @@
-#include "stdafx.h"
 #include "dataobject.h"
 #include "enumformat.h"
 
-OleDataObject::OleDataObject(FORMATETC *fmtetc, STGMEDIUM *stgmed, int count)
+OleDataObject::OleDataObject(LPFORMATETC fmtetc, LPSTGMEDIUM stgmed, int count)
 {
 	AddRef();
 	m_nNumFormats = count;
@@ -33,7 +32,7 @@ HRESULT OleDataObject::Create(LPFORMATETC pFormatEtc, LPSTGMEDIUM pMedium, UINT 
 	return (*ppDataObject) ? S_OK : E_OUTOFMEMORY;
 }
 
-int OleDataObject::LookupFormatEtc(FORMATETC *pFormatEtc)
+int OleDataObject::LookupFormatEtc(LPFORMATETC pFormatEtc)
 {
 	for (int i = 0; i < m_nNumFormats; i++)	{
 		if ((pFormatEtc->tymed    &  m_pFormatEtc[i].tymed) &&
@@ -141,7 +140,7 @@ STDMETHODIMP OleDataObject::GetCanonicalFormatEtc(LPFORMATETC pFormatEct, LPFORM
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP OleDataObject::SetData(FORMATETC *pFormatEtc, STGMEDIUM *pMedium, BOOL fRelease) {
+STDMETHODIMP OleDataObject::SetData(LPFORMATETC pFormatEtc, LPSTGMEDIUM pMedium, BOOL fRelease) {
 	return E_NOTIMPL;
 }
 

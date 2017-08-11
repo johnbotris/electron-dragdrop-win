@@ -1,14 +1,23 @@
 #pragma once
+
+#include <v8.h>
+#include <nan.h>
+#include "options.h"
+#include "windows.h"
+
 class OleDropSourceNotify: public IDropSourceNotify
 {
 private:
+	Options* m_pOptions;
 	ULONG m_lRefCount = 0;
 
+	v8::Local<v8::String> GetWindowText(HWND hwnd);
+
 public:
-	OleDropSourceNotify();
+	OleDropSourceNotify(Options* pOptions);
 	~OleDropSourceNotify();
 
-	static HRESULT Create(IDropSourceNotify** ppDropSourceNotify);
+	static HRESULT Create(Options* pOptions, IDropSourceNotify** ppDropSourceNotify);
 
 	// IUnknown methods
 	STDMETHOD(QueryInterface)(REFIID iid, LPVOID* ppvObject);

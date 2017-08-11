@@ -4,8 +4,7 @@
 #include "dataobject.h"
 #include "dropsource.h"
 #include "dropsourcenotify.h"
-
-using namespace std;
+#include "options.h"
 
 HGLOBAL CopyText()
 {
@@ -37,33 +36,8 @@ NAN_METHOD(WhoAmI)
 
 NAN_METHOD(DragDrop)
 {
-	//if (!info[0]->IsArrayBuffer()) {
-	//	Nan::ThrowError("Argument 1 must be a buffer");
-	//	return;
-	//}
-	//if (!info[1]->IsObject()) {
-	//    Nan::ThrowError("Argument 2 must be an object");
-	//    return;
-	//}
-
-	//auto data = info[1]->ToObject();
-	//if (data->IsArray()) {
-	//    v8::Handle<v8::Array> array = v8::Handle<v8::Array>::Cast(data);
-	//    for (UINT32 i = 0; i < array->Length(); i++) {
-
-	//    }
-	//} else {
-	//    auto formatVal = data->Get(Nan::New("format").ToLocalChecked());
-	//    if (!formatVal->IsString()) {
-
-	//    }
-	//}
-	//HWND hwnd = (HWND)node::Buffer::Data(info[0]->ToObject());
-	//WINDOWINFO windowInfo;
-	//BOOL retVal = ::GetWindowInfo(hwnd, &windowInfo);
-	//if (!retVal) {
-	//    Nan::ThrowError("Invalid window handle");
-	//}
+	Options options(info);
+	
 	IDropSourceNotify* pDropSourceNotify = nullptr;
 	LPDROPSOURCE pDropSource = nullptr;
 	LPDATAOBJECT pDataObject = nullptr;
@@ -72,7 +46,7 @@ NAN_METHOD(DragDrop)
 
 	stgmed.hGlobal = CopyText();
 
-	OleDropSourceNotify::Create(&pDropSourceNotify);
+	OleDropSourceNotify::Create(&options, &pDropSourceNotify);
 	OleDropSource::Create(pDropSourceNotify, &pDropSource);
 	OleDataObject::Create(&fmtetc, &stgmed, 1, &pDataObject);
 
@@ -81,11 +55,18 @@ NAN_METHOD(DragDrop)
 	//
 	DWORD		 dwEffect;
 	auto dwResult = DoDragDrop(pDataObject, pDropSource, DROPEFFECT_COPY | DROPEFFECT_MOVE, &dwEffect);
+	auto completedFunc = options.GetCompletedCallbackFunction();
+	if (!completedFunc.IsEmpty()) {
+		const unsigned argc = 1;
+		v8::Local<v8::Value> argv[argc] = { Nan::New(dwResult) };
+		Nan::MakeCallback(Nan::GetCurrentContext()->Global(), completedFunc, argc, argv);
+	}
 }
 
 NAN_MODULE_INIT(Initialize)
 {
-	//::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+	::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+	::OleInitialize(NULL);
 	NAN_EXPORT(target, WhoAmI);
 	NAN_EXPORT(target, DragDrop);
 }

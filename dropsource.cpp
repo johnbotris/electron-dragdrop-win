@@ -1,6 +1,4 @@
-#include "stdafx.h"
 #include "dropsource.h"
-
 
 OleDropSource::OleDropSource(IDropSourceNotify* pDropSourceNotify)
 {

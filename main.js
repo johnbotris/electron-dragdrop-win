@@ -59,7 +59,17 @@ app.on('activate', function () {
 })
 
 ipc.on('synchronous-message', function (event, arg) {
-  dragDrop.doDragDrop();
+  dragDrop.doDragDrop({
+    formats: [
+      {format: 'CF_CHYRON', data: new Buffer("chyron payload", "ascii")},
+      {format: 'CF_VIZ', data: new Buffer("viz payload", "utf16le")}
+    ],
+    events: {
+      completed: (data) => console.log('complete', data),
+      dragEnter: (data) => console.log('dragEnter', data),
+      // dragLeave: () => console.log('dragLeave')
+    }
+  });
   event.returnValue = "ok";
   // event.returnValue = 'pong'
 })

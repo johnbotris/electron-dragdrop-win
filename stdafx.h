@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "targetver.h"
+// #include "targetver.h"
 
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
 // Windows Header Files:
@@ -23,3 +23,6 @@
 #include <atlstr.h>
 
 // TODO: reference additional headers your program requires here
+#include <nan.h>
+#include <string>
+#include <list>

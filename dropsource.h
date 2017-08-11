@@ -1,4 +1,7 @@
 #pragma once
+
+#include <windows.h>
+
 class OleDropSource: public IDropSource
 {
 private:

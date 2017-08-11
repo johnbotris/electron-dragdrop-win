@@ -1,17 +1,20 @@
 #pragma once
+
+#include <windows.h>
+
 class OleDataObject : public IDataObject
 {
 private:
-	LONG	   m_lRefCount = 0;
-	FORMATETC *m_pFormatEtc = nullptr;
-	STGMEDIUM *m_pStgMedium = nullptr;
-	LONG	   m_nNumFormats = 0;
+	LONG		m_lRefCount = 0;
+	LPFORMATETC	m_pFormatEtc = nullptr;
+	LPSTGMEDIUM	m_pStgMedium = nullptr;
+	LONG		m_nNumFormats = 0;
 
-	int LookupFormatEtc(FORMATETC *pFormatEtc);
+	int LookupFormatEtc(LPFORMATETC pFormatEtc);
 	HGLOBAL DupMem(HGLOBAL hMem);
 
 public:
-	OleDataObject(FORMATETC *fmtetc, STGMEDIUM *stgmed, int count);
+	OleDataObject(LPFORMATETC fmtetc, LPSTGMEDIUM stgmed, int count);
 	~OleDataObject();
 
 	// IUnknown methods
