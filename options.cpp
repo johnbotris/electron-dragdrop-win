@@ -2,6 +2,8 @@
 
 #include <algorithm>
 #include <string>
+#include <iostream>
+
 //#include "Magick++.h"
 
 //extern "C" {
@@ -13,7 +15,7 @@ Options::Options(v8::Local<v8::Object> options) {
 }
 
 void Options::InitFromJS(v8::Local<v8::Object> options) {
-	auto formatsValue = options->Get(Nan::New("formats").ToLocalChecked());
+	auto formatsValue = Nan::Get(options, Nan::New("formats").ToLocalChecked()).ToLocalChecked();
 	if (formatsValue.IsEmpty()) {
 		Nan::ThrowError("formats is empty.");
 	}
@@ -21,13 +23,13 @@ void Options::InitFromJS(v8::Local<v8::Object> options) {
 		Nan::ThrowError("formats must be an object.");
 	}
 	auto formats = formatsValue.As<v8::Object>();
-	auto propertyNames = formats->GetPropertyNames();
+	auto propertyNames = Nan::GetPropertyNames(formats).ToLocalChecked();
 	auto propertyCount = propertyNames->Length();
 
 	for (uint32_t i = 0; i < propertyCount; i++) {
-		auto propertyName = propertyNames->Get(i)->ToString();
+		auto propertyName = Nan::Get(propertyNames, i).ToLocalChecked()->ToString();
 		std::string propertyNameString = *v8::String::Utf8Value(propertyName);
-		auto propertyValue = formats->Get(propertyName);
+		auto propertyValue = Nan::Get(formats, propertyName).ToLocalChecked();
 
 		if (!propertyValue.IsEmpty()) {
 			m_count++;
@@ -44,9 +46,9 @@ void Options::InitFromJS(v8::Local<v8::Object> options) {
 
 	uint32_t idx = 0;
 	for (uint32_t i = 0; i < propertyCount; i++, idx++) {
-		auto propertyName = propertyNames->Get(i)->ToString();
+		auto propertyName = Nan::Get(propertyNames, i).ToLocalChecked()->ToString();
 		std::string propertyNameString = *v8::String::Utf8Value(propertyName);
-		auto propertyValue = formats->Get(propertyName);
+		auto propertyValue = Nan::Get(formats, propertyName).ToLocalChecked();
 
 		if (propertyNameString == "text" &&
 			!propertyValue.IsEmpty() &&
@@ -68,7 +70,7 @@ void Options::InitFromJS(v8::Local<v8::Object> options) {
 		}
 	}
 
-	v8::Local<v8::Value> eventsValue = options->Get(Nan::New("events").ToLocalChecked());
+	v8::Local<v8::Value> eventsValue = Nan::Get(options, Nan::New("events").ToLocalChecked()).ToLocalChecked();
 
 	if (!eventsValue.IsEmpty()) {
 		if (!eventsValue->IsObject()) {
@@ -83,7 +85,7 @@ void Options::InitFromJS(v8::Local<v8::Object> options) {
 		}
 	}
 
-	v8::Local<v8::Value> windowHandleValue = options->Get(Nan::New("windowHandle").ToLocalChecked());
+	v8::Local<v8::Value> windowHandleValue = Nan::Get(options, Nan::New("windowHandle").ToLocalChecked()).ToLocalChecked();
 
 	if (!windowHandleValue.IsEmpty() || windowHandleValue->IsArrayBufferView()) {
 		auto windowHandleBuffer = windowHandleValue.As<v8::ArrayBufferView>();
@@ -130,12 +132,12 @@ HGLOBAL Options::CopyCustomToHGlobal(v8::Local<v8::Value> value) {
 	}
 	else if (value->IsObject()) {
 		auto format = value.As<v8::Object>();
-		auto asciiValue = format->Get(Nan::New("ascii").ToLocalChecked());
+		auto asciiValue = Nan::Get(format, Nan::New("ascii").ToLocalChecked()).ToLocalChecked();
 		auto unicode = TRUE;
 		if (asciiValue->IsTrue()) {
 			unicode = FALSE;
 		}
-		auto dataValue = format->Get(Nan::New("data").ToLocalChecked());
+		auto dataValue = Nan::Get(format, Nan::New("data").ToLocalChecked()).ToLocalChecked();
 		v8::Local<v8::String> data;
 		if (dataValue->IsString()) {
 			data = dataValue->ToString();
