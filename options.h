@@ -1,9 +1,7 @@
 #pragma once
 
-#include "clipboard_format.h"
-
-#include <windows.h>
 #include <nan.h>
+#include <windows.h>
 #include <string>
 #include <locale>
 #include <codecvt>
