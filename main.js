@@ -1,9 +1,12 @@
 const electron = require('electron')
+
+
 // Module to control application life.
 const app = electron.app
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow
 
+const fs = require('fs');
 const path = require('path')
 const url = require('url')
 const ipc = require('electron').ipcMain
@@ -25,7 +28,7 @@ function createWindow () {
   }))
 
   // Open the DevTools.
-  // mainWindow.webContents.openDevTools()
+  mainWindow.webContents.openDevTools()
 
   // Emitted when the window is closed.
   mainWindow.on('closed', function () {
@@ -59,17 +62,36 @@ app.on('activate', function () {
 })
 
 ipc.on('synchronous-message', function (event, arg) {
-  dragDrop.doDragDrop({
-    formats: [
-      {format: 'CF_CHYRON', data: new Buffer("chyron payload", "ascii")},
-      {format: 'CF_VIZ', data: new Buffer("viz payload", "utf16le")}
-    ],
+  // var cfTextFormat = dragDrop.createStandardAsciiTextFormat("Ashkan Daie");
+  // var cfUnicodeTextFormat = dragDrop.createStandardUnicodeTextFormat("Ashkan Daie");
+  // var filename = path.join(__dirname, 'obama.png');
+  // var imageBuffer = fs.readFileSync(filename);
+  // var cfBitmapFormat = dragDrop.createStandardBitmapFormat(imageBuffer);
+  // console.log(cfBitmapFormat.format, cfTextFormat.data.length);
+
+  var filename = path.join(__dirname, 'options.cpp');
+  var data = "<xml>Sample Drag and Drop Payload</xml>";
+  var ascii = new Buffer(data, 'ascii');
+  var utf8 = new Buffer(data, 'utf8');
+  var unicode = new Buffer(data, 'utf16le');
+  
+  var options = {
+    windowHandle: mainWindow.getNativeWindowHandle(),
+    formats: {
+      CF_ASCII: ascii,
+      CF_UTF8: utf8,
+      CF_UNICODE: unicode
+    },
     events: {
       completed: (data) => console.log('complete', data),
       dragEnter: (data) => console.log('dragEnter', data),
-      // dragLeave: () => console.log('dragLeave')
+      dragLeave: () => console.log('dragLeave')
     }
-  });
+  };
+
+  console.log(options);
+
+  dragDrop.doDragDrop(options);
   event.returnValue = "ok";
   // event.returnValue = 'pong'
 })

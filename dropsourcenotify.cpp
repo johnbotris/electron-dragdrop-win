@@ -3,28 +3,6 @@
 #include <iostream>
 #include <sstream>
 
-OleDropSourceNotify::OleDropSourceNotify(Options* pOptions)
-{
-	m_pOptions = pOptions;
-	AddRef();
-}
-
-
-OleDropSourceNotify::~OleDropSourceNotify()
-{
-}
-
-HRESULT OleDropSourceNotify::Create(Options* pOptions, IDropSourceNotify** ppDropSourceNotify)
-{
-	if (ppDropSourceNotify == nullptr)
-		return E_INVALIDARG;
-
-	*ppDropSourceNotify = new OleDropSourceNotify(pOptions);
-
-	return (*ppDropSourceNotify) ? S_OK : E_OUTOFMEMORY;
-
-}
-
 // IUnknown methods
 
 STDMETHODIMP OleDropSourceNotify::QueryInterface(REFIID iid, LPVOID* ppvObject) {
@@ -68,39 +46,30 @@ STDMETHODIMP_(ULONG) OleDropSourceNotify::Release() {
 
 v8::Local<v8::String> OleDropSourceNotify::GetWindowText(HWND hwnd) {
 	auto len = ::GetWindowTextLength(hwnd);
-	LPSTR szText = (LPSTR)malloc(len + 1);
+	LPSTR szText = (LPSTR)::malloc(len + 1);
 	::GetWindowText(hwnd, szText, len + 1);
 	auto text = Nan::New(szText).ToLocalChecked();
-	free(szText);
+	::free(szText);
 	return text;
 }
 
 
 STDMETHODIMP OleDropSourceNotify::DragEnterTarget(HWND hwndTarget) {
-	auto cb = m_pOptions->GetDragEnterCallbackFunction();
-	if (!cb.IsEmpty()) {
+	if (m_pOptions->GetDragEnterCallbackFunction()->IsFunction()) {
 		const unsigned argc = 1;
 		auto data = Nan::New<v8::Object>();
-		data->Set(Nan::New("windowHandle").ToLocalChecked(), Nan::New(hwndTarget));
 		auto windowText = GetWindowText(hwndTarget);
 		data->Set(Nan::New("windowText").ToLocalChecked(), windowText);
-		// Need to iterate through all parent windows and add to an array
-
-		//HWND hwndTopWindow = ::GetTopWindow(hwndTarget);
-		//data->Set(Nan::New("topWindowHandle").ToLocalChecked(), Nan::New(hwndTopWindow));
-		//auto topWindowText = GetWindowText(hwndTopWindow);
-		//data->Set(Nan::New("topWindowText").ToLocalChecked(), topWindowText);
 		v8::Local<v8::Value> argv[argc] = { data };
-		Nan::MakeCallback(Nan::GetCurrentContext()->Global(), cb, argc, argv);
+		Nan::MakeCallback(Nan::GetCurrentContext()->Global(), m_pOptions->GetDragEnterCallbackFunction(), argc, argv);
 	}
 	return S_OK;
 }
 
 STDMETHODIMP OleDropSourceNotify::DragLeaveTarget() {
-	auto cb = m_pOptions->GetDragLeaveCallbackFunction();
-	if (!cb.IsEmpty()) {
+	if (m_pOptions->GetDragLeaveCallbackFunction()->IsFunction()) {
 		const unsigned argc = 0;
-		Nan::MakeCallback(Nan::GetCurrentContext()->Global(), cb, argc, NULL);
+		Nan::MakeCallback(Nan::GetCurrentContext()->Global(), m_pOptions->GetDragLeaveCallbackFunction(), argc, NULL);
 	}
 	return S_OK;
 }

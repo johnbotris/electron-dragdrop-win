@@ -2,7 +2,7 @@
   "targets": [
     {
       "include_dirs" : [
-        "<!(node -e \"require('nan')\")"
+        "<!(node -e \"require('nan')\")",
       ],
       "target_name": "electron-dragdrop-win",
       "sources": [ 
