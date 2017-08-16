@@ -1,5 +1,15 @@
 const dragDrop = require('bindings')('electron-dragdrop-win')
+const os = require('os');
 
-module.exports = {
-    doDragDrop: dragDrop.DragDrop
-};
+var dragDropExport;
+if(os.platform() == 'win') {
+    dragDropExport = {
+        doDragDrop: dragDrop.DragDrop
+    }
+} else {
+    dragDropExport = {
+        doDragDrop: function() {}
+    }    
+}
+
+module.exports = dragDropExport;
