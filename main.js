@@ -78,6 +78,7 @@ ipc.on('synchronous-message', function (event, arg) {
   var options = {
     windowHandle: mainWindow.getNativeWindowHandle(),
     formats: {
+      text: data,
       CF_ASCII: ascii,
       CF_UTF8: utf8,
       CF_UNICODE: unicode
@@ -88,8 +89,6 @@ ipc.on('synchronous-message', function (event, arg) {
       dragLeave: () => console.log('dragLeave')
     }
   };
-
-  console.log(options);
 
   dragDrop.doDragDrop(options);
   event.returnValue = "ok";
