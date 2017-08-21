@@ -33,10 +33,10 @@ NAN_METHOD(DragDrop)
 	OleDataObject::Create(opt, opt, opt.Count(), &pDataObject);
 
 	DWORD		 dwEffect;
-	auto dwResult = DoDragDrop(pDataObject, pDropSource, DROPEFFECT_COPY | DROPEFFECT_MOVE, &dwEffect);
+	auto hr = DoDragDrop(pDataObject, pDropSource, DROPEFFECT_COPY | DROPEFFECT_MOVE, &dwEffect);
 	if (opt.GetCompletedCallbackFunction()->IsFunction()) {
 		const unsigned argc = 1;
-		v8::Local<v8::Value> argv[argc] = { Nan::New(dwResult) };
+		v8::Local<v8::Value> argv[argc] = { Nan::New<v8::Number>(dwEffect) };
 		Nan::MakeCallback(Nan::GetCurrentContext()->Global(), opt.GetCompletedCallbackFunction(), argc, argv);
 	}
 }
