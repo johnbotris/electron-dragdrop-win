@@ -9,7 +9,7 @@ if(os.platform() == 'win32') {
     }
 } else {
     dragDropExport = {
-        doDragDrop: function() {}
+        doDragDrop: function() { return 0; }
     }    
 }
 
