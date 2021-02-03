@@ -1,6 +1,5 @@
 #include <nan.h>
 
-#include "enumformat.h"
 #include "dataobject.h"
 #include "dropsource.h"
 #include "dropsourcenotify.h"
@@ -32,21 +31,19 @@ NAN_METHOD(DragDrop)
 
 	// TODO Check if ToLocalChecked will fail before calling it
 	Local<Object> options = info[0]->ToObject(context).ToLocalChecked();
-	Options opt(options);
+	Options opts(options);
 	
 	IDropSourceNotify* pDropSourceNotify = nullptr;
-	LPDROPSOURCE pDropSource = nullptr;
-	LPDATAOBJECT pDataObject = nullptr;
-	OleDropSourceNotify::Create(&opt, &pDropSourceNotify);
-	OleDropSource::Create(pDropSourceNotify, &pDropSource);
-	OleDataObject::Create(opt, opt, opt.Count(), &pDataObject);
+	LPDATAOBJECT dataObject = new DataObject(opts);
+    LPDROPSOURCE dropSource = new DropSource(opts);
 
 	DWORD dwEffect;
-	auto hr = DoDragDrop(pDataObject, pDropSource, DROPEFFECT_COPY | DROPEFFECT_MOVE, &dwEffect);
-	if (opt.GetCompletedCallbackFunction()->IsFunction()) {
+    HRESULT result = DoDragDrop(dataObject, dropSource, DROPEFFECT_COPY | DROPEFFECT_MOVE, &dwEffect);
+
+    if (opts.GetCompletedCallbackFunction()->IsFunction()) {
 		const unsigned argc = 1;
 		Local<Value> argv[argc] = { Nan::New<Number>(dwEffect) };
-		Nan::MakeCallback(context->Global(), opt.GetCompletedCallbackFunction(), argc, argv);
+		Nan::MakeCallback(context->Global(), opts.GetCompletedCallbackFunction(), argc, argv);
 	}
 }
 

@@ -2,17 +2,18 @@
 
 #include <windows.h>
 
-class OleDropSource: public IDropSource
+class Options;
+
+class DropSource: public IDropSource, public IDropSourceNotify
 {
 private:
-	ULONG m_lRefCount = 0;
-	IDropSourceNotify* m_pDropSourceNotify = nullptr;
+    Options opts;
+	ULONG refCount = 0;
+    v8::Local<v8::String> GetWindowText(HWND window);
 
 public:
-	OleDropSource(IDropSourceNotify* pDropSourceNotify);
-	~OleDropSource();
-
-	static HRESULT Create(IDropSourceNotify* pDropSourceNotify, IDropSource **ppDropSource);
+	DropSource(Options opts);
+	~DropSource();
 
 	// IUnknown methods
 	STDMETHOD(QueryInterface)(REFIID iid, LPVOID* ppvObject);
@@ -22,5 +23,8 @@ public:
 	// IDropSource methods
 	STDMETHOD(QueryContinueDrag)(BOOL fEscapePressed, DWORD grfKeyState);
 	STDMETHOD(GiveFeedback)(DWORD dwEffect);
-};
 
+    // IDropSourceNotify methods
+    STDMETHOD(DragEnterTarget)(HWND hwndTarget);
+    STDMETHOD(DragLeaveTarget)();
+};

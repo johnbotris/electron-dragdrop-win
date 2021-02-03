@@ -1,21 +1,23 @@
 #pragma once
 
+#include <vector>
+#include <utility>
+
 #include <windows.h>
 
-class OleDataObject : public IDataObject
+class Options;
+
+
+class DataObject : public IDataObject
 {
 private:
-	LONG		m_lRefCount = 0;
-	LPFORMATETC	m_pFormatEtc = nullptr;
-	LPSTGMEDIUM	m_pStgMedium = nullptr;
-	LONG		m_nNumFormats = 0;
-
-	int LookupFormatEtc(LPFORMATETC pFormatEtc);
-	HGLOBAL DupMem(HGLOBAL hMem);
+	LONG refCount = 0;
+    std::vector<FORMATETC> formatEtcs;
+    std::vector<STGMEDIUM> stgMediums;
 
 public:
-	OleDataObject(LPFORMATETC fmtetc, LPSTGMEDIUM stgmed, int count);
-	~OleDataObject();
+	DataObject(Options &opts);
+	virtual ~DataObject();
 
 	// IUnknown methods
 	STDMETHOD(QueryInterface)(REFIID iid, LPVOID* ppvObject);

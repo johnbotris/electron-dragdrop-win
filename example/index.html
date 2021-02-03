@@ -23,6 +23,8 @@
 
 <script>
   window.onload = () => {
+
+   
     const { ipcRenderer } = require("electron")
     const element = document.getElementById("div-to-drag")
     element.ondragstart = async event => {
@@ -30,5 +32,9 @@
       const response = await ipcRenderer.invoke("drag").catch(e => "Error: " + e.toString())
       console.log(response)
     }
+
+    ipcRenderer.on("log", (event, ...args) => {
+      console.log(...args)
+    })
   }
 </script>

@@ -10,17 +10,16 @@
       'conditions': [
         ['OS=="win"', {
           'sources': [
-            "addon.cc",
-            "dataobject.cpp",
-            "dropsource.cpp",
-            "dropsourcenotify.cpp",
-            "enumformat.cpp",
-            "options.cpp"
+            "src/addon.cpp",
+            "src/dataobject.cpp",
+            "src/dropsource.cpp",
+            "src/options.cpp",
+            "src/utils.cpp"
           ],
         }],
         ['OS!="win"', {
           'sources': [
-            "addon-unsupported-platform.cc"
+            "src/addon-unsupported-platform.cc"
           ],
         }]
       ]
