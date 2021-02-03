@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Hello World!</title>
+  <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
+
+  <style>
+    div.draggable {
+      width: 100px;
+      height: 100px;
+      background-color: aquamarine;
+    }
+  </style>
+</head>
+
+<body style="background: white;">
+  <div id="div-to-drag" class=draggable draggable="true"></div>
+</body>
+
+</html>
+
+<script>
+  window.onload = () => {
+    const { ipcRenderer } = require("electron")
+    const element = document.getElementById("div-to-drag")
+    element.ondragstart = async event => {
+      event.preventDefault()
+      const response = await ipcRenderer.invoke("drag").catch(e => "Error: " + e.toString())
+      console.log(response)
+    }
+  }
+</script>
