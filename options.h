@@ -85,7 +85,8 @@ public:
 private:
 	void InitFromJS(v8::Local<v8::Object> options);
 	v8::Local<v8::Function> GetFunction(v8::Local<v8::Object> obj, std::string functionName) {
-		v8::Local<v8::Value> func = obj->Get(Nan::New(functionName).ToLocalChecked());
+		// TODO check if ToLocalChecked will fail before calling it
+		v8::Local<v8::Value> func = obj->Get(Nan::GetCurrentContext(), Nan::New(functionName).ToLocalChecked()).ToLocalChecked();
 		if (func->IsFunction()) {
 			return func.As<v8::Function>();
 		}

@@ -4,6 +4,13 @@
 #include <string>
 #include <iostream>
 
+using v8::Local;
+using v8::Object;
+using v8::String;
+using v8::Context;
+using v8::Isolate;
+using v8::Value;
+
 //#include "Magick++.h"
 
 //extern "C" {
@@ -26,10 +33,13 @@ void Options::InitFromJS(v8::Local<v8::Object> options) {
 	auto propertyNames = Nan::GetPropertyNames(formats).ToLocalChecked();
 	auto propertyCount = propertyNames->Length();
 
+	Local<Context> context = Nan::GetCurrentContext();
+	Isolate *isolate = context->GetIsolate();
+
 	for (uint32_t i = 0; i < propertyCount; i++) {
-		auto propertyName = Nan::Get(propertyNames, i).ToLocalChecked()->ToString();
-		std::string propertyNameString = *v8::String::Utf8Value(propertyName);
-		auto propertyValue = Nan::Get(formats, propertyName).ToLocalChecked();
+		Local<Value> propertyName = Nan::Get(propertyNames, i).ToLocalChecked();
+		std::string propertyNameString = *String::Utf8Value(isolate, propertyName);
+		Local<Value> propertyValue = Nan::Get(formats, propertyName).ToLocalChecked();
 
 		if (!propertyValue.IsEmpty()) {
 			m_count++;
@@ -41,32 +51,32 @@ void Options::InitFromJS(v8::Local<v8::Object> options) {
 		}
 	}
 
-	m_pFmtEtc = new FORMATETC[m_count];
-	m_pStgMed = new STGMEDIUM[m_count];
+	this->m_pFmtEtc = new FORMATETC[m_count];
+	this->m_pStgMed = new STGMEDIUM[m_count];
 
 	uint32_t idx = 0;
 	for (uint32_t i = 0; i < propertyCount; i++, idx++) {
-		auto propertyName = Nan::Get(propertyNames, i).ToLocalChecked()->ToString();
-		std::string propertyNameString = *v8::String::Utf8Value(propertyName);
-		auto propertyValue = Nan::Get(formats, propertyName).ToLocalChecked();
-
+		Local<Value> propertyName = Nan::Get(propertyNames, i).ToLocalChecked();
+		std::string propertyNameString  = *String::Utf8Value(isolate, propertyName);
+		Local<Value> propertyValue = Nan::Get(formats, propertyName).ToLocalChecked();
+		Local<Context> context = Nan::GetCurrentContext();
 		if (propertyNameString == "text" &&
 			!propertyValue.IsEmpty() &&
 			propertyValue->IsString()) {
-			m_pFmtEtc[idx] = { CF_TEXT, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
-			m_pStgMed[idx] = { TYMED_HGLOBAL,{ nullptr }, nullptr };
-			m_pStgMed[idx].hGlobal = CopyAsciiToHGlobal(propertyValue->ToString());
+			this->m_pFmtEtc[idx] = {CF_TEXT, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+			this->m_pStgMed[idx] = { TYMED_HGLOBAL,{ nullptr }, nullptr };
+			this->m_pStgMed[idx].hGlobal = CopyAsciiToHGlobal(propertyValue->ToString(context).ToLocalChecked());
 
 			idx++;
-			m_pFmtEtc[idx] = { CF_UNICODETEXT, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
-			m_pStgMed[idx] = { TYMED_HGLOBAL,{ nullptr }, nullptr };
-			m_pStgMed[idx].hGlobal = CopyUnicodeToHGlobal(propertyValue->ToString());
+			this->m_pFmtEtc[idx] = { CF_UNICODETEXT, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
+			this->m_pStgMed[idx] = { TYMED_HGLOBAL,{ nullptr }, nullptr };
+			this->m_pStgMed[idx].hGlobal = CopyUnicodeToHGlobal(propertyValue->ToString(context).ToLocalChecked());
 		}
 		else {
-			auto clipboardFormat = (CLIPFORMAT)::RegisterClipboardFormat(propertyNameString.data());
-			m_pFmtEtc[idx] = { clipboardFormat, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL };
-			m_pStgMed[idx] = { TYMED_HGLOBAL,{ nullptr }, nullptr };
-			m_pStgMed[idx].hGlobal = CopyCustomToHGlobal(propertyValue);
+			auto clipboardFormat = (CLIPFORMAT)::RegisterClipboardFormatA(propertyNameString.data());
+			this->m_pFmtEtc[idx] = {clipboardFormat, nullptr, DVASPECT_CONTENT, -1, TYMED_HGLOBAL};
+			this->m_pStgMed[idx] = {TYMED_HGLOBAL, {nullptr}, nullptr};
+			this->m_pStgMed[idx].hGlobal = CopyCustomToHGlobal(propertyValue);
 		}
 	}
 
@@ -78,10 +88,10 @@ void Options::InitFromJS(v8::Local<v8::Object> options) {
 		}
 
 		if (eventsValue->IsObject()) {
-			v8::Local<v8::Object> events = eventsValue->ToObject();
-			m_completedFunc = GetFunction(events, "completed");
-			m_dragEnterFunc = GetFunction(events, "dragEnter");
-			m_dragLeaveFunc = GetFunction(events, "dragLeave");
+			v8::Local<v8::Object> events = eventsValue->ToObject(context).ToLocalChecked();
+			this->m_completedFunc = GetFunction(events, "completed");
+			this->m_dragEnterFunc = GetFunction(events, "dragEnter");
+			this->m_dragLeaveFunc = GetFunction(events, "dragLeave");
 		}
 	}
 
@@ -98,7 +108,9 @@ void Options::InitFromJS(v8::Local<v8::Object> options) {
 }
 
 HGLOBAL Options::CopyAsciiToHGlobal(v8::Local<v8::String> value) {
-	std::string textValue = *v8::String::Utf8Value(value);
+	Local<Context> context = Nan::GetCurrentContext();
+	Isolate *isolate = context->GetIsolate();
+	std::string textValue = *String::Utf8Value(isolate, value);
 	auto len = value->Length();
 	auto hGlobal = (LPSTR)::GlobalAlloc(GPTR, len + 1);
 	memcpy(hGlobal, textValue.data(), len);
@@ -107,8 +119,10 @@ HGLOBAL Options::CopyAsciiToHGlobal(v8::Local<v8::String> value) {
 }
 
 HGLOBAL Options::CopyUnicodeToHGlobal(v8::Local<v8::String> value) {
+	Local<Context> context = Nan::GetCurrentContext();
+	Isolate *isolate = context->GetIsolate();
 	auto len = value->Length() * 2;
-	std::string asciiTextValue = *v8::String::Utf8Value(value);
+	std::string asciiTextValue = *v8::String::Utf8Value(isolate, value);
 	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
 	std::wstring textValue = converter.from_bytes(asciiTextValue);
 	auto hGlobal = (LPSTR)::GlobalAlloc(GPTR, len + 1);
@@ -118,8 +132,9 @@ HGLOBAL Options::CopyUnicodeToHGlobal(v8::Local<v8::String> value) {
 }
 
 HGLOBAL Options::CopyCustomToHGlobal(v8::Local<v8::Value> value) {
+	Local<Context> context = Nan::GetCurrentContext();
 	if (value->IsString()) {
-		return CopyUnicodeToHGlobal(value->ToString());
+		return CopyUnicodeToHGlobal(value->ToString(context).ToLocalChecked());
 	}
 	else if (value->IsArrayBufferView()) {
 		auto pStgMed = new STGMEDIUM{ TYMED_HGLOBAL,{ nullptr }, nullptr };
@@ -140,7 +155,7 @@ HGLOBAL Options::CopyCustomToHGlobal(v8::Local<v8::Value> value) {
 		auto dataValue = Nan::Get(format, Nan::New("data").ToLocalChecked()).ToLocalChecked();
 		v8::Local<v8::String> data;
 		if (dataValue->IsString()) {
-			data = dataValue->ToString();
+			data = dataValue->ToString(context).ToLocalChecked();
 		}
 		else {
 			data = Nan::New("").ToLocalChecked();
@@ -148,7 +163,7 @@ HGLOBAL Options::CopyCustomToHGlobal(v8::Local<v8::Value> value) {
 		return unicode ? CopyUnicodeToHGlobal(data) : CopyAsciiToHGlobal(data);
 	}
 	else {
-		return CopyUnicodeToHGlobal(value->ToString());
+		return CopyUnicodeToHGlobal(value->ToString(context).ToLocalChecked());
 	}
 }
 
@@ -202,7 +217,6 @@ LPCSTR Options::GetType(v8::Local<v8::Value> value) {
 	if (value->IsUndefined()) return "undefined";
 	if (value->IsWeakMap()) return "weak map";
 	if (value->IsWeakSet()) return "weak set";
-	if (value->IsWebAssemblyCompiledModule()) return "web assembly compiled module";
 	return "UNKNOWN";
 }
 

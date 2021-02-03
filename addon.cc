@@ -9,7 +9,12 @@
 #include <stdlib.h>
 #include <string>
 #include <algorithm>
-//#include <Magick++.h>
+
+using v8::Local;
+using v8::Value;
+using v8::Number;
+using v8::Object;
+using v8::Context; 
 
 NAN_METHOD(DragDrop)
 {
@@ -23,8 +28,12 @@ NAN_METHOD(DragDrop)
 		return;
 	}
 
-	v8::Local<v8::Object> options = info[0]->ToObject();
+	Local<Context> context = Nan::GetCurrentContext();
+
+	// TODO Check if ToLocalChecked will fail before calling it
+	Local<Object> options = info[0]->ToObject(context).ToLocalChecked();
 	Options opt(options);
+	
 	IDropSourceNotify* pDropSourceNotify = nullptr;
 	LPDROPSOURCE pDropSource = nullptr;
 	LPDATAOBJECT pDataObject = nullptr;
@@ -32,12 +41,12 @@ NAN_METHOD(DragDrop)
 	OleDropSource::Create(pDropSourceNotify, &pDropSource);
 	OleDataObject::Create(opt, opt, opt.Count(), &pDataObject);
 
-	DWORD		 dwEffect;
+	DWORD dwEffect;
 	auto hr = DoDragDrop(pDataObject, pDropSource, DROPEFFECT_COPY | DROPEFFECT_MOVE, &dwEffect);
 	if (opt.GetCompletedCallbackFunction()->IsFunction()) {
 		const unsigned argc = 1;
-		v8::Local<v8::Value> argv[argc] = { Nan::New<v8::Number>(dwEffect) };
-		Nan::MakeCallback(Nan::GetCurrentContext()->Global(), opt.GetCompletedCallbackFunction(), argc, argv);
+		Local<Value> argv[argc] = { Nan::New<Number>(dwEffect) };
+		Nan::MakeCallback(context->Global(), opt.GetCompletedCallbackFunction(), argc, argv);
 	}
 }
 
@@ -45,7 +54,6 @@ NAN_MODULE_INIT(Initialize)
 {
 	::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
 	::OleInitialize(NULL);
-	//Magick::InitializeMagick(nullptr);
 	NAN_EXPORT(target, DragDrop);
 }
 

@@ -5,6 +5,9 @@
 
 // IUnknown methods
 
+using v8::Local;
+using v8::String;
+
 STDMETHODIMP OleDropSourceNotify::QueryInterface(REFIID iid, LPVOID* ppvObject) {
 	if (ppvObject == 0) return E_INVALIDARG;
 	else if (iid == IID_IUnknown) {
@@ -46,9 +49,9 @@ STDMETHODIMP_(ULONG) OleDropSourceNotify::Release() {
 
 v8::Local<v8::String> OleDropSourceNotify::GetWindowText(HWND hwnd) {
 	auto len = ::GetWindowTextLength(hwnd);
-	LPSTR szText = (LPSTR)::malloc(len + 1);
-	::GetWindowText(hwnd, szText, len + 1);
-	auto text = Nan::New(szText).ToLocalChecked();
+	LPSTR szText = (LPSTR)::malloc((len + 1) * sizeof(CHAR));
+	::GetWindowTextA(hwnd, szText, len + 1);
+	Local<String> text = Nan::New<String>(szText, len).ToLocalChecked();
 	::free(szText);
 	return text;
 }
@@ -59,7 +62,7 @@ STDMETHODIMP OleDropSourceNotify::DragEnterTarget(HWND hwndTarget) {
 		const unsigned argc = 1;
 		auto data = Nan::New<v8::Object>();
 		auto windowText = GetWindowText(hwndTarget);
-		data->Set(Nan::New("windowText").ToLocalChecked(), windowText);
+		data->Set(Nan::GetCurrentContext(), Nan::New("windowText").ToLocalChecked(), windowText);
 		v8::Local<v8::Value> argv[argc] = { data };
 		Nan::MakeCallback(Nan::GetCurrentContext()->Global(), m_pOptions->GetDragEnterCallbackFunction(), argc, argv);
 	}
