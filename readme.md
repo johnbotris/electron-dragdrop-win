@@ -1,1 +1,1 @@
-HOME=~/.electron-gyp node-gyp configure rebuild --target=1.7.5 --arch=x64 --dist-url=https://atom.io/download/electron
+node-gyp rebuild --target=14.15.4 --arch=x64 --dist-url=https://electronjs.org/headers
