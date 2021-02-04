@@ -26,19 +26,19 @@ function startup() {
         // var cfBitmapFormat = dragDrop.createStandardBitmapFormat(imageBuffer);
         // console.log(cfBitmapFormat.format, cfTextFormat.data.length);
 
-        let data = fetch("http://192.168.178.35:9000/iconsmaller.png")
-            .then(response => {
-                console.log("response", response)
-            })
-            .catch(err => console.log("err", err))
+        // const fetched = fetch("http://192.168.178.35:9000/iconsmaller.png")
+        //     .then(response => {
+        //         console.log("response", response)
+        //     })
+        //     .catch(err => console.log("err", err))
 
-        var filename = path.join(__dirname, 'file.xml');
-        var data = "<xml>Sample Drag and Drop Payload</xml>";
-        var ascii = Buffer.from(data, 'ascii');
-        var utf8 = Buffer.from(data, 'utf8');
-        var unicode = Buffer.from(data, 'utf16le');
+        const filename = path.join(__dirname, 'file.xml');
+        const data = "<xml>Sample Drag and Drop Payload</xml>";
+        const ascii = Buffer.from(data, 'ascii');
+        const utf8 = Buffer.from(data, 'utf8');
+        const unicode = Buffer.from(data, 'utf16le');
 
-        var options = {
+        const options = {
             windowHandle: win.getNativeWindowHandle(),
             formats: {
                 text: data,

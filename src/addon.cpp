@@ -2,7 +2,6 @@
 
 #include "dataobject.h"
 #include "dropsource.h"
-#include "dropsourcenotify.h"
 #include "options.h"
 
 #include <stdlib.h>
@@ -13,45 +12,37 @@ using v8::Local;
 using v8::Value;
 using v8::Number;
 using v8::Object;
-using v8::Context; 
+using v8::Context;
 
-NAN_METHOD(DragDrop)
-{
-	if (info.Length() == 0) {
-		Nan::ThrowError("Invalid parameter. Parameter options missing.");
-		return;
-	}
+NAN_METHOD(DragDrop) {
+    if (info.Length() == 0) {
+        Nan::ThrowError("Invalid parameter. Parameter options missing.");
+        return;
+    }
 
-	if (!info[0]->IsObject()) {
-		Nan::ThrowError("Invalid options property. Must be an object.");
-		return;
-	}
+    if (!info[0]->IsObject()) {
+        Nan::ThrowError("Invalid options property. Must be an object.");
+        return;
+    }
 
-	Local<Context> context = Nan::GetCurrentContext();
+    // TODO Check if ToLocalChecked will fail before calling it
+    Options options(Nan::To<Object>(info[0]).ToLocalChecked());
 
-	// TODO Check if ToLocalChecked will fail before calling it
-	Local<Object> options = info[0]->ToObject(context).ToLocalChecked();
-	Options opts(options);
-	
-	IDropSourceNotify* pDropSourceNotify = nullptr;
-	LPDATAOBJECT dataObject = new DataObject(opts);
-    LPDROPSOURCE dropSource = new DropSource(opts);
+    IDropSourceNotify* pDropSourceNotify = nullptr;
+    LPDATAOBJECT dataObject = new DataObject(options);
+    LPDROPSOURCE dropSource = new DropSource(options);
 
-	DWORD dwEffect;
-    HRESULT result = DoDragDrop(dataObject, dropSource, DROPEFFECT_COPY | DROPEFFECT_MOVE, &dwEffect);
+    DWORD dwEffect;
+    HRESULT result = DoDragDrop(dataObject, dropSource,
+                                DROPEFFECT_COPY | DROPEFFECT_MOVE, &dwEffect);
 
-    if (opts.GetCompletedCallbackFunction()->IsFunction()) {
-		const unsigned argc = 1;
-		Local<Value> argv[argc] = { Nan::New<Number>(dwEffect) };
-		Nan::MakeCallback(context->Global(), opts.GetCompletedCallbackFunction(), argc, argv);
-	}
+    options.OnDragCompleted(Nan::New<Number>(dwEffect));
 }
 
-NAN_MODULE_INIT(Initialize)
-{
-	::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
-	::OleInitialize(NULL);
-	NAN_EXPORT(target, DragDrop);
+NAN_MODULE_INIT(Initialize) {
+    ::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+    ::OleInitialize(NULL);
+    NAN_EXPORT(target, DragDrop);
 }
 
 NODE_MODULE(addon, Initialize)
