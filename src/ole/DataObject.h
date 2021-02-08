@@ -1,17 +1,25 @@
 #pragma once
 
-#include "options.h"
+#include <windows.h>
+#include <shellapi.h>
+#include <oleidl.h>
 
 #include <vector>
+#include <string>
+
+#include "../SPSCQueue.h"
+
+using Queue = rigtorp::SPSCQueue<std::vector<std::string>>;
 
 class DataObject : public IDataObject {
    private:
     LONG refCount;
-    std::vector<FORMATETC> formatEtcs;
-    std::vector<STGMEDIUM> stgMediums;
+    std::vector<FORMATETC> supportedFormats;
+    std::vector<STGMEDIUM> storageMediums;
+    std::shared_ptr<Queue> queue;
 
    public:
-    DataObject(Options& opts);
+    DataObject(std::shared_ptr<Queue> queue);
     virtual ~DataObject();
 
     // IUnknown methods

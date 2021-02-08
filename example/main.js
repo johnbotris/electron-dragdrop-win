@@ -32,37 +32,8 @@ function startup() {
         //     })
         //     .catch(err => console.log("err", err))
 
-        const filename = path.join(__dirname, 'file.xml');
-        const data = "<xml>Sample Drag and Drop Payload</xml>";
-        const ascii = Buffer.from(data, 'ascii');
-        const utf8 = Buffer.from(data, 'utf8');
-        const unicode = Buffer.from(data, 'utf16le');
-
-        const options = {
-            windowHandle: win.getNativeWindowHandle(),
-            formats: {
-                text: data,
-                CF_ASCII: ascii,
-                CF_UTF8: utf8,
-                CF_UNICODE: unicode
-            },
-            events: {
-                completed: (data) => console.log('complete', data),
-                dragEnter: (data) => console.log('dragEnter', data),
-                dragLeave: () => console.log('dragLeave')
-            }
-        };
-
-        log("sadlfkja;s2")
-
-        dragDrop.doDragDrop(options);
-        return "ok"
+        return dragDrop.doDragDrop(Promise.resolve(["C:\\Users\\User\\text.txt"]));
     })
-
-    function log(...args) {
-        win.webContents.send("log", "<main>", ...args)
-    }
-
 }
 
 app.whenReady().then(startup)

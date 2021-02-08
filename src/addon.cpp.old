@@ -1,0 +1,72 @@
+#include <nan.h>
+
+#include <windows.h>
+#include <shellapi.h>
+#include <oleidl.h>
+
+#include "ole/DataObject.h"
+#include "ole/DropSource.h"
+
+#include <iostream>
+#include <vector>
+#include <array>
+
+using namespace std;
+
+using v8::MaybeLocal;
+using v8::Local;
+using v8::Value;
+using v8::Number;
+using v8::Function;
+using v8::Promise;
+
+template <const size_t nargs>
+void makeCallback(Local<Function>& callback,
+                  std::array<Local<Value>, nargs> args) {
+    static_assert(nargs > 0,
+                  "length of args must be greater than 0, otherwise use void "
+                  "maybeCall(MaybeLocal<Value>)");
+}
+
+NAN_METHOD(DoDragDrop) {
+    auto argc = info.Length();
+
+    if (argc < 2) {
+        Nan::ThrowError("Missing parameter \"dataPromise\".");
+        return;
+    }
+
+    if (!info[0]->IsPromise()) {
+        Nan::ThrowError("Parameter \"options\" is not a Promise");
+        return;
+    }
+
+    if (!info[argc - 1]->IsFunction()) {
+        Nan::ThrowError(
+            "Drag and drop internal error: Expected callback function");
+        return;
+    }
+
+    Local<Promise> dataPromise = info[0].As<Promise>();
+    Local<Function> callback = info[argc - 1].As<Function>();
+
+    vector<string> filePaths = vector<string>();
+    filePaths.push_back("C:\\Users\\User\\test.txt");
+
+    LPDATAOBJECT dataObject = new DataObject(filePaths);
+    LPDROPSOURCE dropSource = new DropSource();
+
+    dataObject->Release();
+    dropSource->Release();
+
+    auto args = array<Local<Value>, 2>{Nan::Null(), Nan::New<Number>(dwEffect)};
+    Nan::Call(Nan::Callback(callback), args.size(), &args[0]);
+}
+
+NAN_MODULE_INIT(Initialize) {
+    CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+    OleInitialize(NULL);
+    NAN_EXPORT(target, DoDragDrop);
+}
+
+NODE_MODULE(addon, Initialize)

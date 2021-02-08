@@ -1,48 +1,87 @@
 #include <nan.h>
 
-#include "dataobject.h"
-#include "dropsource.h"
-#include "options.h"
+#include <windows.h>
+#include <shellapi.h>
+#include <oleidl.h>
 
-#include <stdlib.h>
-#include <string>
-#include <algorithm>
+#include <iostream>
+#include <vector>
+#include <array>
+#include <memory>
 
-using v8::Local;
-using v8::Value;
-using v8::Number;
-using v8::Object;
-using v8::Context;
+#include "Worker.h"
+#include "ole/DataObject.h"
+#include "ole/DropSource.h"
 
-NAN_METHOD(DragDrop) {
-    if (info.Length() == 0) {
-        Nan::ThrowError("Invalid parameter. Parameter options missing.");
+using namespace std;
+using namespace v8;
+
+NAN_METHOD(DoDragDrop) {
+    auto argc = info.Length();
+
+    if (argc < 2) {
+        Nan::ThrowError("Missing parameter \"dataPromise\".");
         return;
     }
 
-    if (!info[0]->IsObject()) {
-        Nan::ThrowError("Invalid options property. Must be an object.");
+    if (!info[0]->IsPromise()) {
+        Nan::ThrowError("Parameter \"options\" is not a Promise");
         return;
     }
 
-    // TODO Check if ToLocalChecked will fail before calling it
-    Options options(Nan::To<Object>(info[0]).ToLocalChecked());
+    if (!info[argc - 1]->IsFunction()) {
+        Nan::ThrowError(
+            "Drag and drop internal error: Expected callback function");
+        return;
+    }
 
-    IDropSourceNotify* pDropSourceNotify = nullptr;
-    LPDATAOBJECT dataObject = new DataObject(options);
-    LPDROPSOURCE dropSource = new DropSource(options);
+    Local<Promise> dataPromise = info[0].As<Promise>();
+    Local<Function> callback = info[argc - 1].As<Function>();
 
-    DWORD dwEffect;
-    HRESULT result = DoDragDrop(dataObject, dropSource,
-                                DROPEFFECT_COPY | DROPEFFECT_MOVE, &dwEffect);
+    shared_ptr<Queue>* queuePtr = new std::shared_ptr<Queue>(new Queue(3));
 
-    options.OnDragCompleted(Nan::New<Number>(dwEffect));
+    auto worker =
+        new Worker(new Nan::Callback(callback), shared_ptr<Queue>(*queuePtr));
+
+    auto dataReadyHandler = [](Nan::NAN_METHOD_ARGS_TYPE info) {
+        Local<External> data = info.Data().As<External>();
+        shared_ptr<Queue>* queue =
+            static_cast<shared_ptr<Queue>*>(data->Value());
+
+        auto filePaths = vector<string>();
+
+        // Convert the javascript array of javascript strings into a c++ vector
+        // of c++ strings
+        if (info.Length() > 0 && info[0]->IsArray()) {
+            Local<Array> array = info[0].As<Array>();
+            uint32_t count = array->Length();
+            for (uint32_t i = 0; i < count; ++i) {
+                MaybeLocal<Value> value = Nan::Get(array, i);
+                if (!value.IsEmpty() && value.ToLocalChecked()->IsString()) {
+                    string filePath =
+                        *Nan::Utf8String(value.ToLocalChecked().As<String>());
+                }
+            }
+        }
+
+        // TODO here is where we put whatever data we were waiting for
+        (*queue)->push(filePaths);
+        delete queue;
+    };
+
+    auto dataReadyCallback = Nan::GetFunction(Nan::New<FunctionTemplate>(
+        dataReadyHandler, Nan::New<External>(static_cast<void*>(queuePtr))));
+
+    dataPromise->Then(Nan::GetCurrentContext(),
+                      dataReadyCallback.ToLocalChecked());
+
+    Nan::AsyncQueueWorker(worker);
 }
 
-NAN_MODULE_INIT(Initialize) {
-    ::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
-    ::OleInitialize(NULL);
-    NAN_EXPORT(target, DragDrop);
+NAN_MODULE_INIT(Init) {
+    CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+    OleInitialize(NULL);
+    NAN_EXPORT(target, DoDragDrop);
 }
 
-NODE_MODULE(addon, Initialize)
+NODE_MODULE(addon, Init)

@@ -1,16 +1,27 @@
-const dragDrop = require('bindings')('electron-dragdrop-win')
+const addon = require('bindings')('electron-dragdrop-win')
 const os = require('os');
 
-var dragDropExport;
+let doDragDrop
 
 if(os.platform() == 'win32') {
-    dragDropExport = {
-        doDragDrop: dragDrop.DragDrop
+    doDragDrop = {
+        doDragDrop: promisify(addon.DoDragDrop)
     }
 } else {
-    dragDropExport = {
-        doDragDrop: function() { return 0; }
+    doDragDrop = {
+        doDragDrop: () => Promise.reject(`doDragDrop is not supported on ${os.platform()}`)
     }    
 }
 
-module.exports = dragDropExport;
+module.exports = doDragDrop;
+
+function promisify(functionTakesCallback) {
+    return function() {
+        return new Promise((resolve, reject) => {
+            functionTakesCallback(...arguments, function(err, res) {
+                if (err != null) reject(err)
+                else resolve(res)
+            })
+        })
+    }
+}

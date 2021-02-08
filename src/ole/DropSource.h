@@ -1,14 +1,15 @@
 #pragma once
 
-#include "options.h"
+#include <windows.h>
+#include <shellapi.h>
+#include <oleidl.h>
 
 class DropSource : public IDropSource, public IDropSourceNotify {
    private:
-    Options opts;
     ULONG refCount = 0;
 
    public:
-    DropSource(Options opts);
+    DropSource();
     ~DropSource();
 
     // IUnknown methods

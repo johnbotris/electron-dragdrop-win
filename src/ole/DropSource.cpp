@@ -1,16 +1,15 @@
-#include "dropsource.h"
-#include "options.h"
-#include "utils.h"
+#include "DropSource.h"
 
 #include <nan.h>
+#include <iostream>
+
+using namespace std;
 
 using v8::Local;
 using v8::String;
 using v8::Object;
 
-DropSource::DropSource(Options opts) : refCount(0), opts(opts) {
-    AddRef();
-}
+DropSource::DropSource() : refCount(1) {}
 
 DropSource::~DropSource() {}
 
@@ -75,11 +74,11 @@ STDMETHODIMP DropSource::GiveFeedback(DWORD dwEffect) {
 
 /* * * IDropSourceNotify methods * * */
 STDMETHODIMP DropSource::DragEnterTarget(HWND target) {
-    this->opts.OnDragEnter(getWindowText(target));
+    cout << "drag enter" << endl;
     return S_OK;
 }
 
 STDMETHODIMP DropSource::DragLeaveTarget() {
-    this->opts.OnDragLeave();
+    cout << "drag leave" << endl;
     return S_OK;
 }

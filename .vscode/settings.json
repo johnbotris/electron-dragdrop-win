@@ -67,6 +67,10 @@
         "fstream": "cpp",
         "map": "cpp",
         "unordered_set": "cpp",
-        "xtree": "cpp"
-    }
+        "xtree": "cpp",
+        "*.rh": "cpp",
+        "cstdarg": "cpp",
+        "set": "cpp"
+    },
+    "C_Cpp.intelliSenseEngineFallback": "Enabled"
 }
