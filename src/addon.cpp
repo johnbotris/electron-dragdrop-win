@@ -26,6 +26,7 @@
 #include "ole/DataObject.h"
 #include "ole/DropSource.h"
 #include "ole/ole.h"
+#include "ole/Stream.h"
 
 using namespace std;
 using namespace v8;
@@ -97,8 +98,10 @@ NAN_METHOD(DoDragDrop) {
         STGMEDIUM storage;
         storage.tymed = TYMED_ISTREAM;
         storage.pUnkForRelease = nullptr;
-        storage.pstm = SHCreateMemStream(fileData, fileSize);
-
+        // storage.pstm = SHCreateMemStream(fileData, fileSize);
+        storage.pstm = new Stream(vector<BYTE>(fileData, fileData + fileSize),
+                                  utf16FileName);
+        delete[] fileData;
         files.emplace_back(descriptor, storage);
     }
 
@@ -146,12 +149,12 @@ NAN_METHOD(DoDragDrop) {
 
     if (isInAsyncOperation) {
         cout << "in operation" << endl;
-        // dropSource->Release();
-        // dataObject->Release();
-        // ::OleUninitialize();
 
     } else {
         cout << "not in operation" << endl;
+        // dropSource->Release();
+        // dataObject->Release();
+        // ::OleUninitialize();
     }
 
     Local<Value> error = Nan::Null();

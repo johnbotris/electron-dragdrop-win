@@ -3,16 +3,18 @@
 #include <windows.h>
 
 #include <cstdint>
+#include <string>
 #include <vector>
 
 class Stream : public IStream {
    private:
     ULONG refCount;
     std::vector<uint8_t> data;
+    std::wstring name;
     size_t cursor;
 
    public:
-    Stream(std::vector<uint8_t> data);
+    Stream(std::vector<uint8_t> data, std::wstring name);
     ~Stream();
 
     // IUnknown methods
@@ -27,15 +29,11 @@ class Stream : public IStream {
                           ULARGE_INTEGER* plibNewPosition);
     STDMETHOD(CopyTo)(IStream *pstm, ULARGE_INTEGER cb, ULARGE_INTEGER *pcbRead, ULARGE_INTEGER *pcbWritten);
 
-    STDMETHOD(Clone)(IStream** ppstm) { return E_NOTIMPL; }
-    STDMETHOD(Commit)(DWORD grfCommitFlags) { return E_NOTIMPL; }
-    STDMETHOD(LockRegion)(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) {
-        return E_NOTIMPL;
-    }
-    STDMETHOD(Revert)() { return E_NOTIMPL; }
-    STDMETHOD(SetSize)(ULARGE_INTEGER libNewSize) { return E_NOTIMPL; }
-    STDMETHOD(Stat)(STATSTG* pstatsg, DWORD grfStatFlag) { return E_NOTIMPL; }
-    STDMETHOD(UnlockRegion)(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) {
-        return E_NOTIMPL;
-    }
+    STDMETHOD(Clone)(IStream** ppstm);
+    STDMETHOD(Commit)(DWORD grfCommitFlags);
+    STDMETHOD(LockRegion)(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType);
+    STDMETHOD(Revert)();
+    STDMETHOD(SetSize)(ULARGE_INTEGER libNewSize);
+    STDMETHOD(Stat)(STATSTG* pstatsg, DWORD grfStatFlag);
+    STDMETHOD(UnlockRegion)(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType);
 };
