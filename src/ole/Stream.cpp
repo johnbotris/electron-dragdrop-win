@@ -115,7 +115,7 @@ STDMETHODIMP Stream::CopyTo(IStream* pstm,
     this_thread::sleep_for(2000ms);
     cout << "Stream::CopyTo" << endl;
     ULONG written;
-    return pstm->Write(this->data.data() + this->cursor,
+    auto result = pstm->Write(this->data.data() + this->cursor,
                        min(cb.QuadPart, this->data.size() - this->cursor),
                        &written);
     if (pcbRead)
@@ -123,6 +123,8 @@ STDMETHODIMP Stream::CopyTo(IStream* pstm,
 
     if (pcbWritten)
         pcbWritten->QuadPart = written;
+
+    return result;
 }
 
 STDMETHODIMP Stream::Stat(STATSTG* pstatsg, DWORD grfStatFlag) {
