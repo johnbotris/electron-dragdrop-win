@@ -1,13 +1,10 @@
 #include "DropSource.h"
 
-#include <nan.h>
 #include <iostream>
 
-using namespace std;
+#include "ole.h"
 
-using v8::Local;
-using v8::String;
-using v8::Object;
+using namespace std;
 
 DropSource::DropSource() : refCount(1) {}
 
@@ -18,14 +15,17 @@ STDMETHODIMP DropSource::QueryInterface(REFIID iid, LPVOID* ppvObject) {
     if (ppvObject == 0)
         return E_INVALIDARG;
     else if (iid == IID_IUnknown) {
+        cout << "DropSource::QueryInterface: IUnknown" << endl;
         AddRef();
         *ppvObject = reinterpret_cast<LPUNKNOWN>(this);
         return S_OK;
     } else if (iid == IID_IDropSource) {
+        cout << "DropSource::QueryInterface: IDropSource" << endl;
         AddRef();
         *ppvObject = reinterpret_cast<LPDROPSOURCE>(this);
         return S_OK;
     } else if (iid == IID_IDropSourceNotify) {
+        cout << "DropSource::QueryInterface: IDropSourceNotify" << endl;
         AddRef();
         *ppvObject = reinterpret_cast<IDropSourceNotify*>(this);
         return S_OK;
@@ -74,11 +74,11 @@ STDMETHODIMP DropSource::GiveFeedback(DWORD dwEffect) {
 
 /* * * IDropSourceNotify methods * * */
 STDMETHODIMP DropSource::DragEnterTarget(HWND target) {
-    cout << "drag enter" << endl;
+    wcout << L"entering " << getWindowText(target) << endl;
     return S_OK;
 }
 
 STDMETHODIMP DropSource::DragLeaveTarget() {
-    cout << "drag leave" << endl;
+    wcout << L"leaving" << endl;
     return S_OK;
 }

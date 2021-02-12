@@ -16,23 +16,16 @@ function startup() {
 
 
     ipcMain.handle('drag', (event, ...args) => {
-        console.log("dragging start")
-        // const file = "./1280px-Slovenia_location_map.svg.png"
-        // const icon = nativeImage.createFromPath("./icon.png")
-        // var cfTextFormat = dragDrop.createStandardAsciiTextFormat("Ashkan Daie");
-        // var cfUnicodeTextFormat = dragDrop.createStandardUnicodeTextFormat("Ashkan Daie");
-        // var filename = path.join(__dirname, 'obama.png');
-        // var imageBuffer = fs.readFileSync(filename);
-        // var cfBitmapFormat = dragDrop.createStandardBitmapFormat(imageBuffer);
-        // console.log(cfBitmapFormat.format, cfTextFormat.data.length);
-
-        // const fetched = fetch("http://192.168.178.35:9000/iconsmaller.png")
-        //     .then(response => {
-        //         console.log("response", response)
-        //     })
-        //     .catch(err => console.log("err", err))
-
-        return dragDrop.doDragDrop(Promise.resolve(["C:\\Users\\User\\text.txt"]));
+        return dragDrop.doDragDrop([
+            {
+                name: "test.txt",
+                data: Buffer.from("this test text isn't so long, is it?"),
+            },
+            {
+                name: "story.txt",
+                data: Buffer.from("it was a cold, dark, stormy, night"),
+            },
+        ]);
     })
 }
 

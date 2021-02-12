@@ -1,8 +1,10 @@
 #pragma once
 
-#include <windows.h>
-#include <shellapi.h>
+// Won't compile without this because we get lots of redefinition errors from
+// winsock stuff
+#define WIN32_LEAN_AND_MEAN
 #include <oleidl.h>
+#undef WIN32_LEAN_AND_MEAN
 
 class DropSource : public IDropSource, public IDropSourceNotify {
    private:

@@ -5,7 +5,7 @@
       'include_dirs': [
         '<!(node -e "require(\'nan\')")',
       ],
-      'defines': [ 'UNICODE', '_UNICODE', 'WIN32_LEAN_AND_MEAN' ],
+      'defines': [ 'UNICODE', '_UNICODE'],
       'sources': [
       ],
       'conditions': [
@@ -13,9 +13,12 @@
           'sources': [
             "src/addon.cpp",
             "src/Worker.cpp",
+            "src/v8utils.cpp",
             "src/ole/DataObject.cpp",
             "src/ole/DropSource.cpp",
-            "src/ole/oleutils.cpp",
+            "src/ole/EnumFormat.cpp",
+            "src/ole/Stream.cpp",
+            "src/ole/ole.cpp"
           ],
         }],
         ['OS!="win"', {

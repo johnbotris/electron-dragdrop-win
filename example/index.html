@@ -29,7 +29,7 @@
         const element = document.getElementById("div-to-drag")
         element.ondragstart = async event => {
             event.preventDefault()
-            return ipcRenderer.invoke("drag")
+            ipcRenderer.invoke("drag").then(result => console.log("Result:", result)).catch(err => console.error(error))
         }
 
         ipcRenderer.on("log", (event, ...args) => {

@@ -13,8 +13,6 @@
 
 class Worker : public Nan::AsyncWorker {
    private:
-    LPDROPSOURCE dropSource;
-    LPDATAOBJECT dataObject;
     HRESULT result;
 
    public:
